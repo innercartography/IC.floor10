@@ -478,3 +478,126 @@
   color: var(--color-saffron-spark);
   pointer-events: none;
 }
+
+/* =====================================================================
+   TOUCH / MOBILE — the HUD becomes a bottom sheet, a joystick drives
+   movement, and drag looks around. Gated on .is-touch (set from JS).
+   ===================================================================== */
+
+.hud-handle { display: none; }
+
+.is-touch canvas {
+  touch-action: none; /* let us own drag-look; no browser pan/zoom */
+}
+
+.is-touch .hud {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  max-height: 82vh;
+  padding: 0 20px 24px;
+  background: linear-gradient(180deg, rgba(4, 2, 17, 0) 0%, rgba(4, 2, 17, 0.97) 44px);
+  border-top: 1px solid rgba(128, 82, 255, 0.5);
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  transform: translateY(calc(100% - 64px));
+  transition: transform 0.28s ease;
+}
+
+.is-touch .hud.hud--open {
+  transform: translateY(0);
+  overflow-y: auto;
+}
+
+/* the grab handle — the only thing showing when the sheet is collapsed */
+.is-touch .hud-handle {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 64px;
+  margin-bottom: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-silver-mist);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+}
+
+.is-touch .hud-handle-grip {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-electric-iris);
+  opacity: 0.8;
+}
+
+/* trim the desktop-only chrome on small screens */
+.is-touch .hud-brand { font-size: 12px; margin-bottom: 4px; }
+.is-touch .hud-hint { display: none; }
+.is-touch .compose-picker { height: 240px; }
+.is-touch .discover-results { max-height: 28vh; }
+
+/* note panel becomes a bottom sheet too */
+.is-touch .note-panel {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 22px 20px 28px;
+  background: linear-gradient(0deg, rgba(4, 2, 17, 0.97) 70%, rgba(4, 2, 17, 0) 100%);
+  border-top: 1px solid rgba(128, 82, 255, 0.5);
+  border-radius: 20px 20px 0 0;
+}
+
+.is-touch .note-text { min-height: 120px; }
+
+/* ---------- thumb joystick ---------- */
+
+.joystick {
+  position: fixed;
+  left: 20px;
+  bottom: 96px;
+  z-index: 12;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(128, 82, 255, 0.08);
+  border: 1px solid rgba(128, 82, 255, 0.4);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.joystick-knob {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-electric-iris);
+  box-shadow: 0 0 16px rgba(128, 82, 255, 0.5);
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* hide the joystick while the sheet is open so they don't overlap */
+.is-touch .hud.hud--open ~ .joystick { display: none; }
+
+.is-touch .plant-hint { bottom: 100px; }

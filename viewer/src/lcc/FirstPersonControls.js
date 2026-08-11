@@ -74,7 +74,7 @@ class FirstPersonControls {
       // if (this.domElement !== document) {
       //   this.domElement.focus()
       // }
-      this.domElement.setPointerCapture( event.pointerId );
+      try { this.domElement.setPointerCapture( event.pointerId ) } catch { /* not capturable */ }
       this.rotateStart.set(event.clientX, event.clientY)
       this.rotateDelta.set(0, 0)
 
@@ -99,13 +99,13 @@ class FirstPersonControls {
       }
 
       if (!this.isRotate) return
+      // Derive the look delta from the change in client position rather than
+      // event.movementX/Y: movement* is unreliable for touch pointers (often
+      // 0 on mobile), while the client-position delta works for mouse drag and
+      // finger drag alike.
       this.rotateEnd.set(event.clientX, event.clientY)
-      this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart).multiplyScalar(1)
+      this.rotateDelta.subVectors(this.rotateEnd, this.rotateStart).multiplyScalar(0.0025)
       this.rotateStart.copy(this.rotateEnd)
-
-      let deltaX = event.movementX * 0.002
-      let deltaY = event.movementY * 0.002
-      this.rotateDelta.set(deltaX, deltaY)
     }
 
     this.onKeyDown = function (event) {

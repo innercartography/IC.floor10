@@ -18,7 +18,10 @@ import { armPortalWatchdog } from '../portal-watchdog.js';
 import { buildClubHud, buildNotePanel } from './club-hud.js';
 import { createTotemOverlay } from './overlay.js';
 import { ensureAuthor, exportTotems } from './totems.js';
+import { isTouch, buildSheet, buildJoystick } from './mobile.js';
 import * as commons from './commons.js';
+
+const TOUCH = isTouch();
 
 const origin = LAYERS[0];
 
@@ -59,6 +62,7 @@ const author = ensureAuthor();
 // reveals add non-pinned layers on top.
 const visible = new Map(); // id -> totem
 const pinned = new Set();
+let sheet = null; // mobile bottom-sheet controller (touch only)
 
 function rebuild() {
   overlay.sync([...visible.values()]);
@@ -127,7 +131,10 @@ const hud = buildClubHud({
   locations: origin.locations,
   author,
   onSelectView: goToView,
-  onArmChange: () => {},
+  onArmChange: (armed) => {
+    // on touch, collapse the sheet when arming so the world is tappable
+    if (armed && TOUCH) sheet?.close();
+  },
   onBack: siteRoot.toString(),
   onExport: () => exportTotems([...visible.values()]),
   onSearch: runSearch,
@@ -191,6 +198,14 @@ function goToView(view) {
 }
 
 setMode('track');
+
+// --- touch: bottom-sheet HUD + joystick, free movement by default ----------
+if (TOUCH) {
+  document.body.classList.add('is-touch');
+  sheet = buildSheet();
+  buildJoystick(controls);
+  setMode('free'); // so the joystick can actually move the camera
+}
 
 function isTextEntry(target) {
   if (!target) return false;
@@ -336,6 +351,7 @@ const lccObj = LCCRender.load(
 window.lccObj = lccObj;
 window.scene = scene;
 window.camera = camera;
+window.controls = controls;
 window.commons = commons;
 
 window.addEventListener('resize', () => {
