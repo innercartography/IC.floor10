@@ -12,6 +12,7 @@
     "vite": "^8.2.0"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "animejs": "^4.5.0",
     "emoji-picker-element": "^1.29.1",
     "emoji-picker-element-data": "^1.8.0",

@@ -3,6 +3,150 @@
    Electric Iris for the one primary action, Saffron Spark for labels.
    The emoji are the only saturated color — let them carry it. */
 
+/* ---------- discover: search meanings, reveal layers ---------- */
+
+.hud-discover {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.discover-search {
+  pointer-events: auto;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(128, 82, 255, 0.5);
+  padding: 6px 0;
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 200;
+  color: var(--color-bone-white);
+  caret-color: var(--color-electric-iris);
+  outline: none;
+}
+
+.discover-search::placeholder {
+  color: var(--color-ash-gray);
+}
+
+.discover-status {
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--color-ash-gray);
+}
+
+.discover-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+
+.discover-results::-webkit-scrollbar {
+  display: none;
+}
+
+.discover-all {
+  pointer-events: auto;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: var(--color-saffron-spark);
+  cursor: pointer;
+}
+
+.discover-layer {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1px solid rgba(128, 82, 255, 0.25);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-silver-mist);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.discover-layer:hover {
+  border-color: rgba(128, 82, 255, 0.6);
+  color: var(--color-bone-white);
+}
+
+.discover-layer--on {
+  border-color: var(--color-electric-iris);
+  color: var(--color-bone-white);
+  box-shadow: 0 0 14px rgba(128, 82, 255, 0.3);
+}
+
+.discover-layer-glyphs {
+  font-size: 20px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.discover-layer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.discover-layer-body b {
+  color: var(--color-bone-white);
+  font-weight: 600;
+}
+
+.discover-layer-snippet {
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--color-ash-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* others' traces read a touch quieter than your own until hovered */
+.totem:not(.totem--mine) .totem-cartouche {
+  opacity: 0.82;
+}
+
+.totem--mine .totem-cartouche {
+  border-color: var(--color-electric-iris);
+}
+
+.note-report {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-ash-gray);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.note-report:hover {
+  color: var(--color-saffron-spark);
+}
+
+.note-report:disabled {
+  color: var(--color-deep-verdant);
+  cursor: default;
+}
+
 /* ---------- totem forge ---------- */
 
 .hud-compose {

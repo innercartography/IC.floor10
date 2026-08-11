@@ -54,6 +54,7 @@ export function createTotemOverlay({ camera, onSelect }) {
     for (const { totem, el } of entries) {
       el.querySelector('.totem-stack').textContent = totem.glyphs.join('\n');
       el.classList.toggle('totem--noted', Boolean(totem.text?.trim()));
+      el.classList.toggle('totem--mine', Boolean(totem.mine));
     }
   }
 

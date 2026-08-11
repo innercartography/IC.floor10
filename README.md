@@ -29,7 +29,7 @@ The dev server reads the scan straight from `lcc-result/` — one copy of the wo
 ## Two ways to walk it
 
 - **The track** (`/`) — travel between authored **waypoints**. Press `M` to free-roam (WASD), `P` to capture your current view as a paste-ready waypoint. Waypoints are grouped into **layers**; each layer names the layer it forked from, so contributions compound and every view traces back to the original capture.
-- **The club layer** (`/club/`) — forge an ordered emoji **totem** (up to 4 glyphs), plant it on the scan where something happened, and attach a note. Totems persist locally and export to `layer.json`.
+- **The club layer** (`/club/`) — forge an ordered emoji **totem** (up to 4 glyphs), plant it on the scan where something happened, and attach a note. Totems are **shared and live**: they persist in a backend, so anyone who visits the floor sees them, and new traces appear in real time. You arrive to only the most recent traces (not the whole floor at once), then **search the meanings** to reveal the layers relevant to what you type. Your own traces are yours to edit or remove; others' open read-only with a report option.
 
 See [`viewer/README.md`](viewer/README.md) for the full controls and how to fork a layer.
 

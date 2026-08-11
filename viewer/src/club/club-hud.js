@@ -1,15 +1,18 @@
-// The club layer's HUD: ghost text on the void, plus the totem forge.
-// The compose preview is itself a cartouche — you are forging the ring
-// before you plant it. The palette is the full emoji library (searchable,
-// every glyph, skin tones) served offline from bundled data. The note
-// panel opens out of its totem and pops back into it on done.
+// The club layer's HUD: ghost text on the void, a discovery panel, and the
+// totem forge. Discovery is the answer to "the whole floor at once is a
+// clusterfuck": you arrive to only the freshest traces, then type what you're
+// looking for and reveal the layers whose meanings match, one toggle at a
+// time. The forge is unchanged — compose an ordered emoji ring, then plant it.
 
 import { animate } from 'animejs';
 import { Picker } from 'emoji-picker-element';
 import emojiDataUrl from 'emoji-picker-element-data/en/emojibase/data.json?url';
-import { MAX_GLYPHS, capState, setHandle } from './totems.js';
+import { MAX_GLYPHS, setHandle } from './totems.js';
 
-export function buildClubHud({ locations, author, layer, onSelectView, onArmChange, onExport }) {
+export function buildClubHud({
+  locations, author, onSelectView, onArmChange, onExport,
+  onBack, onSearch, onToggleLayer, onRevealAll, onClearDiscovery
+}) {
   const root = document.createElement('div');
   root.className = 'hud';
 
@@ -27,10 +30,51 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   backRow.className = 'hud-files';
   const backLink = document.createElement('a');
   backLink.className = 'hud-file-link';
-  backLink.href = new URL('../', location.href).toString();
+  backLink.href = onBack || '../';
   backLink.innerHTML = '← back to <span>the track</span>';
   backRow.appendChild(backLink);
   root.appendChild(backRow);
+
+  // --- discover: search meanings, reveal matching layers -------------------
+  const discoverLabel = document.createElement('div');
+  discoverLabel.className = 'hud-section-label';
+  discoverLabel.textContent = 'Discover';
+  root.appendChild(discoverLabel);
+
+  const discover = document.createElement('div');
+  discover.className = 'hud-discover';
+  root.appendChild(discover);
+
+  const searchInput = document.createElement('input');
+  searchInput.className = 'discover-search';
+  searchInput.type = 'search';
+  searchInput.placeholder = 'what are you looking for?';
+  discover.appendChild(searchInput);
+
+  const discoverStatus = document.createElement('div');
+  discoverStatus.className = 'discover-status';
+  discoverStatus.textContent = 'the floor shows its most recent traces first';
+  discover.appendChild(discoverStatus);
+
+  const results = document.createElement('div');
+  results.className = 'discover-results';
+  discover.appendChild(results);
+
+  let searchTimer = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const q = searchInput.value;
+    searchTimer = setTimeout(() => {
+      if (!q.trim()) {
+        results.replaceChildren();
+        discoverStatus.textContent = 'the floor shows its most recent traces first';
+        onClearDiscovery?.();
+        return;
+      }
+      discoverStatus.textContent = 'searching…';
+      onSearch?.(q.trim());
+    }, 300);
+  });
 
   // --- track stops (reused from the origin layer) ---
   const trackLabel = document.createElement('div');
@@ -63,7 +107,6 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   compose.className = 'hud-compose';
   root.appendChild(compose);
 
-  // the ring being forged — cartouche preview of the ordered stack
   const stackRow = document.createElement('div');
   stackRow.className = 'compose-cartouche';
   compose.appendChild(stackRow);
@@ -82,7 +125,6 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   clear.textContent = 'clear the ring';
   compose.appendChild(clear);
 
-  // full emoji library — offline data, search, categories, skin tones
   const picker = new Picker({ dataSource: emojiDataUrl });
   picker.classList.add('dark', 'compose-picker');
   compose.appendChild(picker);
@@ -113,7 +155,7 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   const exportLink = document.createElement('a');
   exportLink.className = 'hud-file-link';
   exportLink.href = '#';
-  exportLink.innerHTML = 'export layer <span>.json</span>';
+  exportLink.innerHTML = 'export what you see <span>.json</span>';
   exportLink.addEventListener('click', (e) => {
     e.preventDefault();
     onExport();
@@ -121,7 +163,7 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   files.appendChild(exportLink);
   const note = document.createElement('div');
   note.className = 'hud-file-soon';
-  note.textContent = 'PR it back — the world compounds';
+  note.textContent = 'the floor remembers — everyone plants into it';
   files.appendChild(note);
   root.appendChild(files);
 
@@ -177,18 +219,59 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
     stackGlyphs.textContent = glyphStack.join(' ');
     stackEmpty.style.display = glyphStack.length ? 'none' : '';
     stackRow.classList.toggle('compose-cartouche--charged', glyphStack.length > 0);
-    const caps = capState(layer, author.id);
-    count.textContent = `${caps.total} / ${layer.cap.total ?? '∞'} planted in this layer`;
-    if (caps.blocked) {
-      plant.disabled = true;
-      plant.textContent = caps.totalFull ? 'layer full' : 'quota spent';
-    } else {
-      plant.disabled = glyphStack.length === 0;
-      plant.textContent = armed ? 'click the world…' : 'plant totem';
-    }
+    plant.disabled = glyphStack.length === 0;
+    plant.textContent = armed ? 'click the world…' : 'plant totem';
   }
 
   syncCompose();
+
+  // --- discovery result rendering -----------------------------------------
+  // groups: [{ layer, totems: [...] }], each layer a reveal toggle.
+  const revealed = new Set();
+
+  function renderResults(groups, total) {
+    results.replaceChildren();
+    revealed.clear();
+    if (!groups.length) {
+      discoverStatus.textContent = 'no traces match — try other words';
+      return;
+    }
+    discoverStatus.textContent = `${total} trace${total === 1 ? '' : 's'} across ${groups.length} layer${groups.length === 1 ? '' : 's'}`;
+
+    if (groups.length > 1) {
+      const all = document.createElement('button');
+      all.className = 'discover-all';
+      all.textContent = 'reveal all';
+      all.addEventListener('click', () => {
+        groups.forEach((g) => {
+          if (!revealed.has(g.layer)) {
+            revealed.add(g.layer);
+            onToggleLayer?.(g.layer, g.totems, true);
+          }
+        });
+        results.querySelectorAll('.discover-layer').forEach((el) => el.classList.add('discover-layer--on'));
+      });
+      results.appendChild(all);
+    }
+
+    groups.forEach((g) => {
+      const row = document.createElement('button');
+      row.className = 'discover-layer';
+      const glyphs = g.totems[0]?.glyphs?.join(' ') ?? '✦';
+      const snippet = (g.totems[0]?.text || '').slice(0, 60);
+      row.innerHTML =
+        `<span class="discover-layer-glyphs">${glyphs}</span>` +
+        `<span class="discover-layer-body"><b>${g.layer}</b> · ${g.totems.length}` +
+        `<span class="discover-layer-snippet">${snippet ? '“' + snippet + '”' : 'unwritten'}</span></span>`;
+      row.addEventListener('click', () => {
+        const on = !revealed.has(g.layer);
+        if (on) revealed.add(g.layer); else revealed.delete(g.layer);
+        row.classList.toggle('discover-layer--on', on);
+        onToggleLayer?.(g.layer, g.totems, on);
+      });
+      results.appendChild(row);
+    });
+  }
 
   return {
     setMode(mode) {
@@ -205,17 +288,24 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
     },
     disarm: () => setArmed(false),
     isArmed: () => armed,
-    refreshCaps: syncCompose
+    setCount(shown, mine) {
+      count.textContent = mine > 0
+        ? `${shown} in view · you've left ${mine}`
+        : `${shown} in view`;
+    },
+    showResults: renderResults,
+    searchFailed(msg) {
+      discoverStatus.textContent = msg || 'search unavailable';
+    }
   };
 }
 
 // --- note panel ------------------------------------------------------------
-// Opens out of its totem's cartouche and, on done, visually pops back into
-// it — the note "returns to the ring." anchorFor(totem) supplies the
-// totem's current screen position; onReturn(totem) lets the overlay bounce
-// the cartouche when the note lands.
+// Owner-aware: your own trace is editable and removable; someone else's opens
+// read-only with a quiet "report" instead. Opens out of its totem's cartouche
+// and pops back into it on done.
 
-export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
+export function buildNotePanel({ onSave, onRemove, onReport, anchorFor, onReturn }) {
   const panel = document.createElement('div');
   panel.className = 'note-panel';
   panel.hidden = true;
@@ -227,6 +317,7 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
     <div class="note-actions">
       <button class="note-done">done</button>
       <button class="note-remove">remove totem</button>
+      <button class="note-report">report</button>
     </div>
   `;
   document.body.appendChild(panel);
@@ -234,27 +325,40 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
   const glyphsEl = panel.querySelector('.note-glyphs');
   const textEl = panel.querySelector('.note-text');
   const statusEl = panel.querySelector('.note-status');
+  const removeBtn = panel.querySelector('.note-remove');
+  const reportBtn = panel.querySelector('.note-report');
 
   let current = null;
   let statusTimer = null;
   let animating = false;
 
   textEl.addEventListener('input', () => {
-    if (!current) return;
+    if (!current || !current.mine) return;
     current.text = textEl.value;
+    statusEl.textContent = 'saving…';
     onSave(current);
-    statusEl.textContent = 'saved';
-    clearTimeout(statusTimer);
-    statusTimer = setTimeout(() => (statusEl.textContent = ''), 1200);
   });
 
   panel.querySelector('.note-done').addEventListener('click', () => close());
-  panel.querySelector('.note-remove').addEventListener('click', () => {
+  removeBtn.addEventListener('click', () => {
     if (!current) return;
     const doomed = current;
     hide();
     onRemove(doomed);
   });
+  reportBtn.addEventListener('click', () => {
+    if (!current) return;
+    reportBtn.disabled = true;
+    reportBtn.textContent = 'reported';
+    onReport?.(current);
+  });
+
+  // called by the owner-side save path to confirm the write landed
+  function saved(ok) {
+    statusEl.textContent = ok ? 'saved' : 'save failed';
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => (statusEl.textContent = ''), 1200);
+  }
 
   function resetTransform() {
     panel.style.transform = '';
@@ -270,13 +374,20 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
     current = totem;
     glyphsEl.textContent = totem.glyphs.join(' ');
     textEl.value = totem.text ?? '';
+    textEl.readOnly = !totem.mine;
+    textEl.placeholder = totem.mine
+      ? 'What does this mark? A memory, a claim, a dare, a seed of a story…'
+      : 'someone left this here';
+    removeBtn.style.display = totem.mine ? '' : 'none';
+    reportBtn.style.display = totem.mine ? 'none' : '';
+    reportBtn.disabled = false;
+    reportBtn.textContent = 'report';
     statusEl.textContent = '';
     panel.hidden = false;
     resetTransform();
 
     const anchor = anchorFor?.(totem);
     if (anchor) {
-      // grow out of the cartouche
       const c = panelCenter();
       animate(panel, {
         translateX: [anchor.x - c.x, 0],
@@ -289,7 +400,7 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
     } else {
       animate(panel, { translateX: [40, 0], opacity: [0, 1], duration: 350, ease: 'outCubic' });
     }
-    textEl.focus();
+    if (totem.mine) textEl.focus();
   }
 
   function hide() {
@@ -306,7 +417,6 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
       hide();
       return;
     }
-    // shrink back into the cartouche, then bounce the ring
     animating = true;
     const c = panelCenter();
     animate(panel, {
@@ -324,5 +434,5 @@ export function buildNotePanel({ onSave, onRemove, anchorFor, onReturn }) {
     });
   }
 
-  return { open, close, isOpen: () => !panel.hidden };
+  return { open, close, saved, isOpen: () => !panel.hidden, current: () => current };
 }
