@@ -9,9 +9,12 @@ import { armPortalWatchdog } from './portal-watchdog.js';
 
 const scene = new THREE.Scene();
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+// Clamp pixel ratio on touch — a high-DPR phone framebuffer plus millions of
+// splats routinely loses the GL context (black screen after load).
+const _touch = matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, _touch ? 1.25 : 2));
 renderer.setClearColor(0x040211);
 document.body.appendChild(renderer.domElement);
 

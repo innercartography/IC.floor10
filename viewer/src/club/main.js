@@ -31,11 +31,30 @@ const assetUrl = (rel) => new URL(rel, siteRoot).toString();
 
 const scene = new THREE.Scene();
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+// Clamp pixel ratio hard on touch: a phone at DPR 3 rendering millions of
+// splats builds an enormous framebuffer and routinely loses the GL context
+// (which shows up as a black screen after the scene "loads").
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, TOUCH ? 1.25 : 2));
 renderer.setClearColor(0x040211);
 document.body.appendChild(renderer.domElement);
+
+// If the context is lost anyway, say so instead of showing a silent black void.
+renderer.domElement.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  showFatal('THE FLOOR OVERWHELMED THIS DEVICE — the scan is heavy for mobile GPUs. Try desktop, or reload.');
+});
+
+function showFatal(msg) {
+  let el = document.querySelector('.fatal-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'fatal-banner';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+}
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 150000);
 camera.position.set(0.8, 1.0, 0.8);
