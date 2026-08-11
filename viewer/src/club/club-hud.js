@@ -22,6 +22,16 @@ export function buildClubHud({ locations, author, layer, onSelectView, onArmChan
   modeBadge.className = 'hud-mode';
   root.appendChild(modeBadge);
 
+  // door back to the root viewer (the track / waypoints)
+  const backRow = document.createElement('div');
+  backRow.className = 'hud-files';
+  const backLink = document.createElement('a');
+  backLink.className = 'hud-file-link';
+  backLink.href = new URL('../', location.href).toString();
+  backLink.innerHTML = '← back to <span>the track</span>';
+  backRow.appendChild(backLink);
+  root.appendChild(backRow);
+
   // --- track stops (reused from the origin layer) ---
   const trackLabel = document.createElement('div');
   trackLabel.className = 'hud-section-label';

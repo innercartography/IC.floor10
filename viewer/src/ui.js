@@ -26,6 +26,26 @@ export function buildHud({ layers, onSelectView, onSelectLayer }) {
   modeBadge.className = 'hud-mode';
   root.appendChild(modeBadge);
 
+  // --- club layer entry: this root viewer is the track/waypoints; the totem
+  // forge lives on the /club/ page. Give travelers a clear door to it.
+  const clubLabel = document.createElement('div');
+  clubLabel.className = 'hud-section-label';
+  clubLabel.textContent = 'The Club Layer';
+  root.appendChild(clubLabel);
+
+  const club = document.createElement('div');
+  club.className = 'hud-files';
+  const clubPill = document.createElement('a');
+  clubPill.className = 'hud-repo-pill';
+  clubPill.href = new URL('club/', location.href).toString();
+  clubPill.textContent = '✦ Plant a totem';
+  club.appendChild(clubPill);
+  const clubNote = document.createElement('div');
+  clubNote.className = 'hud-file-soon';
+  clubNote.textContent = 'compose an emoji totem, plant it, leave a note';
+  club.appendChild(clubNote);
+  root.appendChild(club);
+
   const layersLabel = document.createElement('div');
   layersLabel.className = 'hud-section-label';
   layersLabel.textContent = 'Layers';
