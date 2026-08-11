@@ -3,6 +3,13 @@ name: Deploy viewer to GitHub Pages
 on:
   push:
     branches: [main]
+    # Only rebuild when the app or the scan changes — the build re-fetches the
+    # ~150MB scan from Git LFS every run, so skip it for docs/SQL-only commits.
+    paths:
+      - 'viewer/**'
+      - 'lcc-result/**'
+      - 'mesh-files/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
