@@ -143,6 +143,12 @@ const lccObj = LCCRender.load(
   }
 );
 
+// On touch, cap the splat budget so iOS WebKit doesn't lose the GL context
+// on the full ~4.7M-splat scan (black screen after load).
+if (_touch && lccObj?.setMaxSplats) {
+  try { lccObj.setMaxSplats(600000); } catch (e) { console.warn('setMaxSplats failed', e); }
+}
+
 window.lccObj = lccObj;
 window.LCCRender = LCCRender;
 window.scene = scene;

@@ -367,6 +367,15 @@ const lccObj = LCCRender.load(
   }
 );
 
+// On touch, cap the splat budget hard. The full scan is ~4.7M splats; iOS
+// WebKit (Safari and Chrome-on-iOS both) will allocate that and then lose the
+// GL context — the "loading screen, then black" symptom. ~600k coarse-LOD
+// splats keeps the room readable and fits a phone's GPU budget.
+const MOBILE_SPLAT_CAP = 600000;
+if (TOUCH && lccObj?.setMaxSplats) {
+  try { lccObj.setMaxSplats(MOBILE_SPLAT_CAP); } catch (e) { console.warn('setMaxSplats failed', e); }
+}
+
 window.lccObj = lccObj;
 window.scene = scene;
 window.camera = camera;
