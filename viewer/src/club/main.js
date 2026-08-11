@@ -154,7 +154,7 @@ const hud = buildClubHud({
     // on touch, collapse the sheet when arming so the world is tappable
     if (armed && TOUCH) sheet?.close();
   },
-  onBack: siteRoot.toString(),
+  onBack: new URL('track.html', siteRoot).toString(),
   onExport: () => exportTotems([...visible.values()]),
   onSearch: runSearch,
   onToggleLayer: toggleLayer,

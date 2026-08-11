@@ -70,8 +70,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        // The club (totem) experience is the front door now; the waypoint
+        // track viewer moved to /track.html. /club/ stays as an alias so
+        // older links keep working.
         main: path.resolve(here, 'index.html'),
-        club: path.resolve(here, 'club', 'index.html')
+        club: path.resolve(here, 'club', 'index.html'),
+        track: path.resolve(here, 'track.html')
       }
     }
   }
