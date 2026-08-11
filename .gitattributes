@@ -1,0 +1,12 @@
+# Binary capture data — never diff or convert line endings
+*.bin binary
+*.lci binary
+*.lcp binary
+*.ply binary
+*.jpg binary
+*.spz binary
+
+# data.bin is the full splat payload (~150MB) — over GitHub's 100MB file
+# limit, so it must go through Git LFS. (Everything else in the scan is
+# comfortably under the limit and stays as regular git blobs.)
+lcc-result/data.bin filter=lfs diff=lfs merge=lfs -text

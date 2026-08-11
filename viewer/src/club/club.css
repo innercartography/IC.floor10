@@ -1,0 +1,336 @@
+/* Club-layer additions on top of the base Dala void styles (style.css).
+   Same laws: pure black, no panels/borders/glass, scale over weight,
+   Electric Iris for the one primary action, Saffron Spark for labels.
+   The emoji are the only saturated color — let them carry it. */
+
+/* ---------- totem forge ---------- */
+
+.hud-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* the ring being forged — a horizontal cartouche: black fill, Electric
+   Iris ring. Dashed while empty, solid once it holds glyphs. */
+.compose-cartouche {
+  pointer-events: auto;
+  min-height: 34px;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--color-void);
+  border: 1.5px dashed rgba(128, 82, 255, 0.5);
+  border-radius: 9999px;
+  padding: 8px 18px;
+}
+
+.compose-cartouche--charged {
+  border-style: solid;
+  border-color: var(--color-electric-iris);
+}
+
+.compose-stack-glyphs {
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: 4px;
+}
+
+/* the full library — emoji-picker-element themed into the void */
+.compose-picker {
+  pointer-events: auto;
+  width: 100%;
+  height: 300px;
+  border: 1.5px solid rgba(128, 82, 255, 0.45);
+  border-radius: 12px;
+  --background: #000000;
+  --border-color: rgba(128, 82, 255, 0.25);
+  --border-size: 0;
+  --category-emoji-size: 1rem;
+  --emoji-size: 1.15rem;
+  --num-columns: 7;
+  --indicator-color: var(--color-electric-iris);
+  --indicator-height: 2px;
+  --input-border-color: rgba(128, 82, 255, 0.45);
+  --input-border-radius: 9999px;
+  --input-font-color: #ffffff;
+  --input-placeholder-color: #9a9a9a;
+  --outline-color: var(--color-electric-iris);
+  --button-hover-background: rgba(128, 82, 255, 0.18);
+  --button-active-background: rgba(128, 82, 255, 0.3);
+}
+
+.compose-stack-empty {
+  font-size: 14px;
+  font-weight: 200;
+  color: var(--color-ash-gray);
+}
+
+.compose-clear {
+  pointer-events: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-ash-gray);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.compose-clear:hover {
+  color: var(--color-bone-white);
+}
+
+.compose-plant {
+  pointer-events: auto;
+  background: var(--color-electric-iris);
+  color: var(--color-bone-white);
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  border-radius: 24px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.compose-plant:hover {
+  opacity: 0.85;
+}
+
+.compose-plant:disabled {
+  background: none;
+  color: var(--color-ash-gray);
+  cursor: default;
+}
+
+.compose-plant--armed {
+  background: var(--color-saffron-spark);
+  color: var(--color-void);
+}
+
+.compose-count {
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--color-silver-mist);
+}
+
+.compose-handle {
+  pointer-events: auto;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 0;
+  width: 170px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 200;
+  color: var(--color-bone-white);
+  caret-color: var(--color-electric-iris);
+  outline: none;
+}
+
+.compose-handle::placeholder {
+  color: var(--color-ash-gray);
+}
+
+/* ---------- planted totems (world billboards) ---------- */
+
+.totem-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.totem {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  will-change: transform;
+  transform-origin: bottom center;
+}
+
+/* the shen ring: elongated vertical ring, black fill, Electric Iris
+   border, knot bar at the base. Dashed until the totem holds a note —
+   the ring closes when the utterance is complete. */
+.totem-cartouche {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-void);
+  border: 1.5px dashed rgba(128, 82, 255, 0.65);
+  border-radius: 9999px;
+  padding: 12px 9px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.totem--noted .totem-cartouche {
+  border-style: solid;
+  border-color: var(--color-electric-iris);
+  box-shadow: 0 0 18px rgba(128, 82, 255, 0.35);
+}
+
+.totem:hover .totem-cartouche {
+  border-color: var(--color-electric-iris);
+  box-shadow: 0 0 22px rgba(128, 82, 255, 0.5);
+}
+
+.totem-stack {
+  display: block;
+  white-space: pre;
+  font-size: 26px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* the shen's tangent bar — the knot that seals the ring */
+.totem-knot {
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin-top: 3px;
+  background: var(--color-electric-iris);
+  opacity: 0.8;
+}
+
+.totem-stem {
+  display: block;
+  width: 1.5px;
+  height: 22px;
+  background: linear-gradient(to bottom, var(--color-electric-iris), transparent);
+}
+
+/* ---------- note panel (right column, mirrors the HUD scrim) ---------- */
+
+.note-panel[hidden] {
+  /* the class's display:flex would otherwise defeat the hidden attribute —
+     this was why "done" left the note stuck on screen */
+  display: none;
+}
+
+.note-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(360px, 88vw);
+  padding: 30px;
+  background: linear-gradient(270deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.note-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: var(--color-saffron-spark);
+}
+
+.note-glyphs {
+  font-size: 42px;
+  line-height: 1.2;
+}
+
+.note-text {
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  resize: none;
+  width: 100%;
+  min-height: 180px;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 200;
+  line-height: 1.5;
+  color: var(--color-bone-white);
+  caret-color: var(--color-electric-iris);
+  outline: none;
+}
+
+.note-text::placeholder {
+  color: var(--color-ash-gray);
+  font-weight: 200;
+}
+
+.note-status {
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--color-deep-verdant);
+  min-height: 16px;
+}
+
+.note-actions {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.note-done {
+  background: var(--color-electric-iris);
+  color: var(--color-bone-white);
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  border-radius: 24px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.note-done:hover {
+  opacity: 0.85;
+}
+
+.note-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-ash-gray);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.note-remove:hover {
+  color: var(--color-saffron-spark);
+}
+
+/* ---------- plant-mode hint ---------- */
+
+.plant-hint {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: var(--color-saffron-spark);
+  pointer-events: none;
+}
